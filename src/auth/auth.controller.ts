@@ -18,8 +18,8 @@ export class AuthController {
     @Get('google/callback')
     @UseGuards(AuthGuard('google'))
     googleAuthRedirect(@Req() req, @Res() res) {
-        const { googleId, email, accessToken } = req.user;
-        res.json({ googleId, email, accessToken });
+        const { googleId, email, accessToken, id } = req.user;
+        res.json({ googleId, email, accessToken, id });
     }
 
     @Post('register')

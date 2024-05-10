@@ -66,7 +66,12 @@ export class AuthService {
     }
 
     async generateJwtToken(user: User) {
-        const payload = { email: user.email };
+        const payload = {
+            email: user.email,
+            // elementId: user.elementId,
+            id: user.id,
+            googleId: user.googleId,
+        };
         return {
             accessToken: this.jwtService.sign(payload),
         };

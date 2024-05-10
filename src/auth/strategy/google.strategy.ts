@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, VerifyCallback } from 'passport-google-oauth20';
-import { Neo4jService } from '../neo4j.service';
-import { User } from '../user/user.model';
+import { Neo4jService } from '../../neo4j.service';
+import { User } from '../../user/user.model';
 import * as env from 'env-var';
 import * as dotenv from 'dotenv'
-import { AuthService } from './auth.service';
+import { AuthService } from '../auth.service';
 dotenv.config()
 
 
@@ -26,16 +26,13 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
             const googleId = profile.id;
             const email = profile.emails[0].value;
 
-            //const user = await this.neo4jService.findUserByGoogleId(googleId);
             let user = await this.neo4jService.getUserByEmail(email);
 
             if (!user) {
-                const newUser = new User({ googleId, email, password: '' });
-                await this.neo4jService.createUser(newUser);
-                user = newUser;
+                user = await this.neo4jService.createUser(new User({ googleId, email, password: '' }));
             }
 
-            request.user = { googleId, email };
+            request.user = { googleId, email, id: user.id };
 
             const { accessToken } = await this.authService.generateJwtToken(user);
 

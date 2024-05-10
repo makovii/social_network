@@ -44,7 +44,7 @@ export class Neo4jService {
     async createUser(user: User): Promise<User> {
         const session = this.driver.session();
         try {
-            const result = await session.run('CREATE (u:User {googleId: $googleId, email: $email, password: $password}) RETURN u', user);
+            const result = await session.run('CREATE (u:User {googleId: $googleId, email: $email, password: $password}) RETURN u, ID(u) as nodeId', user);
             const record = result.records[0];
             return this.mapUserFromRecord(record);
         } finally {
@@ -55,7 +55,7 @@ export class Neo4jService {
     async getUserById(id: number): Promise<User> {
         const session = this.driver.session();
         try {
-            const result = await session.run('MATCH (u:User) WHERE ID(u) = $id RETURN u', { id });
+            const result = await session.run("MATCH (u:User) WHERE ID(u) = $id RETURN u, ID(u) as nodeId", { id });
             
             if (result.records.length === 0) {
                 return null;
@@ -73,7 +73,7 @@ export class Neo4jService {
     async getUserByEmail(email: string): Promise<User> {
         const session = this.driver.session();
         try {
-            const result = await session.run('MATCH (u:User {email: $email}) RETURN u', { email });
+            const result = await session.run('MATCH (u:User {email: $email}) RETURN u, ID(u) as nodeId', { email });
             
             if (result.records.length === 0) {
                 return null;
@@ -88,14 +88,41 @@ export class Neo4jService {
         }
     }
 
+    async createFollow(requestingUser: User, userToFollow: User): Promise<boolean> {
+        const session = this.driver.session();
+        try {
+            const relation = 'FOLLOW';
+            const query = `MATCH (u1:User), (u2:User) WHERE ID(u1) = $userId1 AND ID(u2) = $userId2 CREATE (u1)-[r:${relation}]->(u2) RETURN r`;
+            const result = await session.run(query, { userId1: requestingUser.id, userId2: userToFollow.id });
+            
+            if (result.records.length === 0) {
+                return false;
+            }
+
+            return true;
+        } catch (error) {
+            // TODO: add logger
+            console.log(error);
+            
+            return false;
+        } finally {
+            session.close();
+        }
+
+    }
+
     private mapUserFromRecord(record): User {
         const node = record.get('u');
+        const nodeId = record.get('nodeId').low;
+
         return new User({
             googleId: node.properties.googleId,
             email: node.properties.email,
             password: node.properties.password,
-            elementId: node.properties.elementId,
-            id: node.properties.id,
+            // elementId: node.elementId,
+            id: nodeId,
         });
     }
+
+
 }
