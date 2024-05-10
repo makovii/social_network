@@ -4,6 +4,7 @@ import { AuthService } from './auth.service';
 import { CreateUserByPassDto } from './dto/create-user.dto';
 import { User } from '../user/user.model';
 import { ValidationPipe } from '../pipe/validation.pipe';
+import { ErrorText } from '../constant/constant';
 
 @Controller('auth')
 export class AuthController {
@@ -27,7 +28,7 @@ export class AuthController {
     async register(@Body() body: CreateUserByPassDto): Promise<User> {
         const { email, password } = body;
         if (!email || !password) {
-            throw new BadRequestException('Email and password are required');
+            throw new BadRequestException(ErrorText.EMAIL_AND_PASS);
         }
         return await this.authService.register({ email, password });
     }
@@ -37,7 +38,7 @@ export class AuthController {
     async login(@Body() body: CreateUserByPassDto, @Res() res) {
         const { email, password } = body;
         if (!email || !password) {
-            return res.status(HttpStatus.BAD_REQUEST).json({ message: 'Email and password are required' });
+            return res.status(HttpStatus.BAD_REQUEST).json({ message: ErrorText.EMAIL_AND_PASS });
         }
         
         try {

@@ -3,6 +3,7 @@ import neo4j from 'neo4j-driver';
 import { User } from './user/user.model';
 import * as env from 'env-var';
 import * as dotenv from 'dotenv'
+import { Relations } from './constant/constant';
 dotenv.config()
 
 @Injectable()
@@ -91,9 +92,16 @@ export class Neo4jService {
     async createFollow(requestingUser: User, userToFollow: User): Promise<boolean> {
         const session = this.driver.session();
         try {
-            const relation = 'FOLLOW';
-            const query = `MATCH (u1:User), (u2:User) WHERE ID(u1) = $userId1 AND ID(u2) = $userId2 CREATE (u1)-[r:${relation}]->(u2) RETURN r`;
-            const result = await session.run(query, { userId1: requestingUser.id, userId2: userToFollow.id });
+
+            const findQuery = `MATCH p=(u1:User)-[:${Relations.FOLLOW}]->(u2:User) WHERE ID(u1) = $userId1 AND ID(u2) = $userId2 RETURN p`;
+            const resultFind = await session.run(findQuery, { userId1: requestingUser.id, userId2: userToFollow.id });
+
+            if (resultFind.records.length !== 0) {
+                return true;
+            }
+
+            const createQuery = `MATCH (u1:User), (u2:User) WHERE ID(u1) = $userId1 AND ID(u2) = $userId2 CREATE (u1)-[r:${Relations.FOLLOW}]->(u2) RETURN r`;
+            const result = await session.run(createQuery, { userId1: requestingUser.id, userId2: userToFollow.id });
             
             if (result.records.length === 0) {
                 return false;
