@@ -1,19 +1,17 @@
 import { Module } from '@nestjs/common';
-import { PassportModule } from '@nestjs/passport';
 import { Neo4jService } from './neo4j.service';
-import { GoogleStrategy } from './auth/google.strategy';
 import { AuthController } from './auth/auth.controller';
-import { AuthService } from './auth/auth.service';
+import { AuthModule } from './auth/auth.module';
+import { UserModule } from './user/user.module';
 
 @Module({
     imports: [
-        PassportModule.register({ defaultStrategy: 'google' }),
+        AuthModule,
+        UserModule,
     ],
     controllers: [AuthController],
     providers: [
         Neo4jService,
-        GoogleStrategy,
-        AuthService,
     ],
 })
 export class AppModule {}

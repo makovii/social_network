@@ -15,9 +15,8 @@ export class AuthController {
     @Get('google/callback')
     @UseGuards(AuthGuard('google'))
     googleAuthRedirect(@Req() req, @Res() res) {
-        const { googleId, email } = req.user;
-
-        res.json({ googleId, email });
+        const { googleId, email, accessToken } = req.user;
+        res.json({ googleId, email, accessToken });
     }
 
     @Post('register')
@@ -28,6 +27,21 @@ export class AuthController {
         }
         return this.authService.register({ email, password });
 
+    }
+
+    @Post('login')
+    async login(@Body() body: { email: string; password: string }, @Res() res) {
+        const { email, password } = body;
+        if (!email || !password) {
+            return res.status(HttpStatus.BAD_REQUEST).json({ message: 'Email and password are required' });
+        }
+        
+        try {
+            const response = await this.authService.login(body);
+            return res.status(HttpStatus.OK).json(response);
+        } catch (error) {
+            return res.status(HttpStatus.UNAUTHORIZED).json({ message: error.message });
+        }
     }
 }
 

@@ -5,12 +5,13 @@ import { Neo4jService } from '../neo4j.service';
 import { User } from '../user/user.model';
 import * as env from 'env-var';
 import * as dotenv from 'dotenv'
+import { AuthService } from './auth.service';
 dotenv.config()
 
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
-    constructor(private readonly neo4jService: Neo4jService) {
+    constructor(private readonly neo4jService: Neo4jService, private readonly authService: AuthService) {
         super({
             clientID: env.get('GOOGLE_CLIENT_ID').required().asString(),
             clientSecret: env.get('GOOGLE_CLIENT_SECRET').required().asString(),
@@ -26,16 +27,19 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
             const email = profile.emails[0].value;
 
             //const user = await this.neo4jService.findUserByGoogleId(googleId);
-            const user = await this.neo4jService.getUserByEmail(email);
+            let user = await this.neo4jService.getUserByEmail(email);
 
             if (!user) {
                 const newUser = new User({ googleId, email, password: '' });
                 await this.neo4jService.createUser(newUser);
+                user = newUser;
             }
 
             request.user = { googleId, email };
 
-            done(null, { googleId, email });
+            const { accessToken } = await this.authService.generateJwtToken(user);
+
+            done(null, { googleId, email, accessToken });
         } catch (err) {
             done(err, false);
         }

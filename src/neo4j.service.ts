@@ -94,6 +94,8 @@ export class Neo4jService {
             googleId: node.properties.googleId,
             email: node.properties.email,
             password: node.properties.password,
+            elementId: node.properties.elementId,
+            id: node.properties.id,
         });
     }
 }
