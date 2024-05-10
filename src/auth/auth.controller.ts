@@ -1,6 +1,9 @@
-import { Body, Controller, Get, HttpStatus, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, HttpStatus, Post, Req, Res, UseGuards, UsePipes } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
+import { CreateUserByPassDto } from './dto/create-user.dto';
+import { User } from '../user/user.model';
+import { ValidationPipe } from '../pipe/validation.pipe';
 
 @Controller('auth')
 export class AuthController {
@@ -20,17 +23,18 @@ export class AuthController {
     }
 
     @Post('register')
-    async register(@Body() body: { email: string; password: string }, @Res() res) {
+    @UsePipes(ValidationPipe)
+    async register(@Body() body: CreateUserByPassDto): Promise<User> {
         const { email, password } = body;
         if (!email || !password) {
-            return res.status(HttpStatus.BAD_REQUEST).json({ message: 'Email and password are required' });
+            throw new BadRequestException('Email and password are required');
         }
-        return this.authService.register({ email, password });
-
+        return await this.authService.register({ email, password });
     }
 
     @Post('login')
-    async login(@Body() body: { email: string; password: string }, @Res() res) {
+    @UsePipes(ValidationPipe)
+    async login(@Body() body: CreateUserByPassDto, @Res() res) {
         const { email, password } = body;
         if (!email || !password) {
             return res.status(HttpStatus.BAD_REQUEST).json({ message: 'Email and password are required' });
