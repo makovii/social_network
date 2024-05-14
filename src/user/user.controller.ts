@@ -2,6 +2,7 @@ import { Controller, Get, Param, UseGuards, Post, Body, Req, Res, HttpStatus } f
 import { User } from './user.model';
 import { UserService } from './user.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Publication } from './dto/publication';
 
 @Controller('user')
 export class UserController {
@@ -12,10 +13,9 @@ export class UserController {
     return this.userService.getUserById(+id);
   }
 
-  @Get('email/:email')
+  @Post('getUser')
   @UseGuards(JwtAuthGuard)
-  async getUserByEmail(@Param('email') email: string, @Req() req): Promise<{ email: string }> {
-    console.log(req.user);
+  async getUserByEmail(@Body('email') email: string, @Req() req): Promise<{ email: string }> {
     return this.userService.getUserByEmail(email);
   }
 
@@ -30,6 +30,18 @@ export class UserController {
     } else {
         return res.status(HttpStatus.BAD_REQUEST).json();
     }
-
   }
+
+
+  @Post('createPublication')
+  @UseGuards(JwtAuthGuard)
+  async createPublication(@Body('text') text: string, @Req() req): Promise<Publication> {
+    const { googleId, email: userEmail, id } = req.user;
+
+    const user = new User({ email: userEmail, googleId, id, password: ''});
+
+    return await this.userService.createPublication(user, text);
+  }
+
+
 }

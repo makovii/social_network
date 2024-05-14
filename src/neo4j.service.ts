@@ -4,6 +4,7 @@ import { User } from './user/user.model';
 import * as env from 'env-var';
 import * as dotenv from 'dotenv'
 import { Relations } from './constant/constant';
+import { Publication, PublicationCreateInterface } from './user/dto/publication';
 dotenv.config()
 
 @Injectable()
@@ -119,6 +120,23 @@ export class Neo4jService {
 
     }
 
+    async createPublication(user: User, publication: PublicationCreateInterface): Promise<Publication> {
+        const session = this.driver.session();
+        try {
+            const result = await session.run(
+                `MATCH (u:User) WHERE ID(u) = $userId
+                 CREATE (p:Publication {text: $text})
+                 CREATE (u)-[:CREATOR]->(p)
+                 RETURN p, ID(p) as nodeId`,
+                { userId: user.id, text: publication.text }
+            );
+            const record = result.records[0];
+            return this.mapPublicationFromRecord(record);
+        } finally {
+            session.close();
+        }
+    }
+
     private mapUserFromRecord(record): User {
         const node = record.get('u');
         const nodeId = record.get('nodeId').low;
@@ -129,6 +147,16 @@ export class Neo4jService {
             password: node.properties.password,
             // elementId: node.elementId,
             id: nodeId,
+        });
+    }
+
+    private mapPublicationFromRecord(record): Publication {
+        const node = record.get('p');
+        const nodeId = record.get('nodeId').low;
+
+        return new Publication({
+            id: nodeId,
+            text: node.properties.text,
         });
     }
 
