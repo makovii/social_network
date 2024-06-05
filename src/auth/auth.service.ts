@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Neo4jService } from '../neo4j.service';
-import { User } from '../user/user.model';
+import { User, UserCreationI } from '../user/user.model';
 import * as bcrypt from 'bcrypt';
 import * as env from 'env-var';
 import * as dotenv from 'dotenv'
@@ -17,21 +17,21 @@ export class AuthService {
     ) {}
     
     async hashPassword(password: string): Promise<string> {
-        const saltRounds = env.get('SALT').required().asInt();
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
-        return hashedPassword;
+        const salt = env.get('SALT').required().asInt();
+        const hashedPass = await bcrypt.hash(password, salt);
+        return hashedPass;
     }
 
     async register(body: { email: string, password: string }){
         try {
-            const existingUser = await this.neo4jService.getUserByEmail(body.email);
-            if (existingUser) {
+            const userExist = await this.neo4jService.getUserByEmail(body.email);
+            if (userExist) {
                 throw new BadRequestException(ErrorText.EMAIL_ALREADY_REGISTERED);
             }
 
-            const hashedPassword = await this.hashPassword(body.password);
+            const hashedPass = await this.hashPassword(body.password);
 
-            const userObject = new User({ email: body.email, password: hashedPassword, googleId: '' });
+            const userObject: UserCreationI = { email: body.email, password: hashedPass };
             const newUser = await this.neo4jService.createUser(userObject);
 
             return newUser;
@@ -50,8 +50,8 @@ export class AuthService {
           throw new BadRequestException(ErrorText.INVALID_CREDENTIALS);
         }
     
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-        if (!isPasswordValid) {
+        const isValidPassword = await bcrypt.compare(password, user.password);
+        if (!isValidPassword) {
           throw new BadRequestException(ErrorText.INVALID_CREDENTIALS);
         }
     
@@ -69,8 +69,7 @@ export class AuthService {
     async generateJwtToken(user: User) {
         const payload = {
             email: user.email,
-            // elementId: user.elementId,
-            id: user.id,
+            uuid: user.uuid,
             googleId: user.googleId,
         };
         return {

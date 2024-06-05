@@ -29,10 +29,10 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
             let user = await this.neo4jService.getUserByEmail(email);
 
             if (!user) {
-                user = await this.neo4jService.createUser(new User({ googleId, email, password: '' }));
+                user = await this.neo4jService.createUser(new User({ googleId, email }));
             }
 
-            request.user = { googleId, email, id: user.id };
+            request.user = { googleId, email, uuid: user.uuid };
 
             const { accessToken } = await this.authService.generateJwtToken(user);
 

@@ -1,6 +1,6 @@
 import { IsEmail, IsNotEmpty } from 'class-validator';
 
-export class CreateUserByPassDto {
+export class CreateUserDto {
   @IsEmail()
   email: string;
 

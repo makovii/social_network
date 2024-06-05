@@ -1,7 +1,7 @@
 import { BadRequestException, Body, Controller, Get, HttpStatus, Post, Req, Res, UseGuards, UsePipes } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
-import { CreateUserByPassDto } from './dto/create-user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 import { User } from '../user/user.model';
 import { ValidationPipe } from '../pipe/validation.pipe';
 import { ErrorText } from '../constant/constant';
@@ -20,22 +20,29 @@ export class AuthController {
     @UseGuards(AuthGuard('google'))
     googleAuthRedirect(@Req() req, @Res() res) {
         const { googleId, email, accessToken, id } = req.user;
-        res.json({ googleId, email, accessToken, id });
+        console.log(accessToken)
+        res.redirect(`http://localhost:5173/feed?accessToken=${accessToken}`);
     }
 
     @Post('register')
     @UsePipes(ValidationPipe)
-    async register(@Body() body: CreateUserByPassDto): Promise<User> {
+    async register(@Body() body: CreateUserDto): Promise<User> {
         const { email, password } = body;
         if (!email || !password) {
             throw new BadRequestException(ErrorText.EMAIL_AND_PASS);
         }
-        return await this.authService.register({ email, password });
+        try {
+            const result =  await this.authService.register({ email, password });
+            return result;            
+        } catch (e) {
+            throw e;
+        }
+
     }
 
     @Post('login')
     @UsePipes(ValidationPipe)
-    async login(@Body() body: CreateUserByPassDto, @Res() res) {
+    async login(@Body() body: CreateUserDto, @Res() res) {
         const { email, password } = body;
         if (!email || !password) {
             return res.status(HttpStatus.BAD_REQUEST).json({ message: ErrorText.EMAIL_AND_PASS });

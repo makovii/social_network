@@ -1,8 +1,6 @@
 import {
     ArgumentMetadata,
     BadRequestException,
-    HttpException,
-    HttpStatus,
     Injectable,
     PipeTransform,
   } from '@nestjs/common';
@@ -20,16 +18,16 @@ import {
       const obj = plainToClass(metadata.metatype, value);
       const errors = await validate(obj);
   
-      if (errors.length) {
-        const messages = errors.map((err) => {
-          if (!err.constraints) {
+      if (errors.length > 0) {
+        const msgs = errors.map((e) => {
+          if (!e.constraints) {
             throw new BadRequestException;
           }
   
-          return `${err.property} - ${Object.values(err.constraints).join(', ')}`;
+          return `${e.property}: ${Object.values(e.constraints).join(', ')}`;
         });
   
-        throw new HttpException(messages, HttpStatus.BAD_REQUEST);
+        throw new BadRequestException(msgs);
       }
       return value;
     }
