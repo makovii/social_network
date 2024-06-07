@@ -32,45 +32,45 @@ describe('PublicationService', () => {
 
     describe('likePub', () => {
         it('should like a publication', async () => {
-            const user: User = { uuid: 'uuid1', email: 'test@example.com', password: 'psw', googleId: null };
-            const uuidPub = 'pub1';
+            const user: User = { uuid: 'userUuid', email: 'test@example.com', password: 'psw', googleId: null };
+            const uuidPublication =  '550e8400-e29b-41d4-a716-446655440000';
             (neo4jService.likePub as jest.Mock).mockResolvedValue(true);
 
-            const result = await publicationService.likePub(user, uuidPub);
+            const result = await publicationService.likePub(user, uuidPublication);
             expect(result).toBe(true);
         });
 
         it('should throw InternalServerErrorException if likePub fails', async () => {
-            const user: User = { uuid: 'uuid1', email: 'test@example.com', password: 'psw', googleId: null };
-            const uuidPub = 'pub1';
+            const user: User = { uuid: 'userUuid', email: 'test@example.com', password: 'psw', googleId: null };
+            const uuidPublication =  '550e8400-e29b-41d4-a716-446655440000';
             (neo4jService.likePub as jest.Mock).mockResolvedValue(false);
 
-            await expect(publicationService.likePub(user, uuidPub)).rejects.toThrow(InternalServerErrorException);
+            await expect(publicationService.likePub(user, uuidPublication)).rejects.toThrow(InternalServerErrorException);
         });
     });
 
     describe('unlikePub', () => {
         it('should unlike a publication', async () => {
-            const user: User = { uuid: 'uuid1', email: 'test@example.com', password: 'psw', googleId: null };
-            const uuidPub = 'pub1';
+            const user: User = { uuid: 'userUuid', email: 'test@example.com', password: 'psw', googleId: null };
+            const uuidPublication =  '550e8400-e29b-41d4-a716-446655440000';
             (neo4jService.unlikePub as jest.Mock).mockResolvedValue(true);
 
-            const result = await publicationService.unlikePub(user, uuidPub);
+            const result = await publicationService.unlikePub(user, uuidPublication);
             expect(result).toBe(true);
         });
 
         it('should throw InternalServerErrorException if unlikePub fails', async () => {
-            const user: User = { uuid: 'uuid1', email: 'test@example.com', password: 'psw', googleId: null };
-            const uuidPub = 'pub1';
+            const user: User = { uuid: 'userUuid', email: 'test@example.com', password: 'psw', googleId: null };
+            const uuidPublication =  '550e8400-e29b-41d4-a716-446655440000';
             (neo4jService.unlikePub as jest.Mock).mockResolvedValue(false);
 
-            await expect(publicationService.unlikePub(user, uuidPub)).rejects.toThrow(InternalServerErrorException);
+            await expect(publicationService.unlikePub(user, uuidPublication)).rejects.toThrow(InternalServerErrorException);
         });
     });
 
     describe('commentPublication', () => {
         it('should comment on a publication', async () => {
-            const user: User = { uuid: 'uuid1', email: 'test@example.com', password: 'psw', googleId: null };
+            const user: User = { uuid: 'userUuid', email: 'test@example.com', password: 'psw', googleId: null };
             const commentPub: CommentPub = { text: 'Nice post!', uuid: 'pub1' };
             (neo4jService.commentPub as jest.Mock).mockResolvedValue(true);
 
@@ -79,7 +79,7 @@ describe('PublicationService', () => {
         });
 
         it('should throw InternalServerErrorException if commentPublication fails', async () => {
-            const user: User = { uuid: 'uuid1', email: 'test@example.com', password: 'psw', googleId: null };
+            const user: User = { uuid: 'userUuid', email: 'test@example.com', password: 'psw', googleId: null };
             const commentPub: CommentPub = { text: 'Nice post!', uuid: 'pub1' };
             (neo4jService.commentPub as jest.Mock).mockResolvedValue(false);
 
