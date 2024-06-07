@@ -3,10 +3,13 @@ import { User } from './user.model';
 import { Neo4jService } from '../neo4j.service';
 import { userMapper } from './user.mapper';
 import { Publication, PublicationCreateI } from '../publication/publication.model';
+import { PinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class UserService {
-    constructor(private readonly neo4jService: Neo4jService) {}
+    constructor(private readonly neo4jService: Neo4jService, private readonly logger: PinoLogger) {
+        this.logger.setContext(UserService.name);
+    }
 
     async getUserByUuid(uuid: string): Promise<User | null> {
         const user = await this.neo4jService.getUserByUuid(uuid);
@@ -15,7 +18,8 @@ export class UserService {
 
     async getUserByEmail(email: string) {
         const user = await this.neo4jService.getUserByEmail(email);
-        if (!user) throw new BadRequestException(`There is no user with email: ${email}`)
+        if (!user) throw new BadRequestException(`There is no user with email: ${email}`);
+        this.logger.info(`get user ${email}`);
         return userMapper(user);
     }
 
@@ -28,7 +32,7 @@ export class UserService {
         const userToFollow = await this.neo4jService.getUserByEmail(emailToFollow);
 
         if (!userToFollow) throw new BadRequestException(`There is no user with email - ${emailToFollow}`);
-
+        this.logger.info(`subscribe ${requestingUser.email} to ${emailToFollow}`);
         return await this.neo4jService.createFollow(requestingUser, userToFollow);
     }
 

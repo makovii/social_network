@@ -7,12 +7,13 @@ import { Entity, Relation, setupSchemas } from './neo4js.schemas';
 import { Publication, PublicationCreateI } from './publication/publication.model';
 import { CommentPub } from './publication/dto/commentPub.dto';
 dotenv.config()
+import { PinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class Neo4jService {
     private readonly instance;
 
-    constructor() {
+    constructor(private readonly logger: PinoLogger) {
         this.instance = new Neode(
             env.get('NEO4J_URI').required().asString(),
             env.get('NEO4J_DB').required().asString(),
@@ -28,6 +29,7 @@ export class Neo4jService {
             return this.userMap(result);
         } catch (e) {
             console.log(e);
+            this.logger.error(e);
             throw (e);
         }
     }
@@ -43,8 +45,8 @@ export class Neo4jService {
             return this.userMap(result);
         } catch (e) {
             console.log(e);
+            this.logger.error(e);
             throw e;
-            // TODO: add logger and throw error
         }
     }
 
@@ -54,6 +56,7 @@ export class Neo4jService {
             return this.userMap(result);
         } catch (e) {
             console.log(e);
+            this.logger.error(e);
             throw (e);
         }
     }
@@ -66,6 +69,7 @@ export class Neo4jService {
             return result2;
         } catch (e) {
             console.log(e);
+            this.logger.error(e);
             throw e;
         }
     }
@@ -82,6 +86,7 @@ export class Neo4jService {
             return users;
         } catch (e) {
             console.log(e);
+            this.logger.error(e);
         }
     }
 
@@ -93,8 +98,8 @@ export class Neo4jService {
             const relation = await userNode.relateTo(userToFollowNode, Relation.FRIEND_TO, { time: Date.now() });
             return true
         } catch (e) {
-            // TODO: add logger and throw error
             console.log(e);
+            this.logger.error(e);
             return false
         }
     }
@@ -108,8 +113,8 @@ export class Neo4jService {
             console.log('result: ', result);
             return true
         } catch (e) {
-            // TODO: add logger and throw error
             console.log(e);
+            this.logger.error(e);
             return false
         }
     }
@@ -127,8 +132,8 @@ export class Neo4jService {
             return new Publication(resultPub.properties() as unknown as Publication);
         } catch (e) {
             console.log(e);
+            this.logger.error(e);
             throw e;
-            // TODO: add logger and throw error
         }
     }
 
@@ -141,6 +146,7 @@ export class Neo4jService {
             return true;
         } catch (e) {
             console.log(e);
+            this.logger.error(e);
             throw (e);
         }
     }
@@ -170,6 +176,7 @@ export class Neo4jService {
             return true;
         } catch (e) {
             console.log(e);
+            this.logger.error(e);
             throw (e);
         }
     }
@@ -183,6 +190,7 @@ export class Neo4jService {
             return true;
         } catch (e) {
             console.log(e);
+            this.logger.error(e);
             throw (e);
         }
     }
@@ -209,6 +217,7 @@ export class Neo4jService {
             return publications;
         } catch (e) {
             console.log(e);
+            this.logger.error(e);
             throw e;
         }
     }
@@ -225,6 +234,7 @@ export class Neo4jService {
             return users;
         } catch (e) {
             console.log(e);
+            this.logger.error(e);
             throw (e);
         }
     }
